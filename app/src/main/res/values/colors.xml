@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="accent">#FF6F00</color>
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="card_background">#2C2C2C</color>
+
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+
+    <color name="status_missing">#EF5350</color>
+    <color name="status_complete">#66BB6A</color>
+    <color name="status_extra">#FFA726</color>
+
+    <color name="confirm_green">#2E7D32</color>
+    <color name="reject_red">#C62828</color>
+    <color name="retry_grey">#616161</color>
+
+    <color name="scrim_overlay">#99000000</color>
+    <color name="pending_overlay">#CC000000</color>
+</resources>
