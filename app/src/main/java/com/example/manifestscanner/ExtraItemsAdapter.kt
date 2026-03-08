@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.manifestscanner.R
 import com.example.manifestscanner.databinding.ItemExtraBinding
-import com.example.manifestscanner.viewmodel.ExtraItem
 
 /**
  * Displays [ExtraItem] rows in the "Extras" tab of the Discrepancy Report.
