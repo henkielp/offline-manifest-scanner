@@ -444,39 +444,111 @@ class ManifestViewModel : ViewModel() {
      * are silently skipped (they are likely header rows or OCR artifacts).
      */
     internal fun parseManifestText(rawText: String): List<ManifestItem> {
-        val results = mutableListOf<ManifestItem>()
-        
-        // Pattern logic:
-        // 1. (\d{10,12}) -> Looks for the UPC (10-12 digits) at the start of the data.
-        // 2. \s+ -> Skips the gap between UPC and Description.
-        // 3. ([A-Z0-9\s\-/]{3,}) -> Grabs the Description (Caps, numbers, dashes).
-        // 4. \s+(\d+) -> Grabs the Case count at the end of the line.
-        val columnRegex = Regex("""(\d{10,12})\s+([A-Z0-9\s\-/]{3,})\s+(\d+)""")
-
         val lines = rawText.lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
 
-        for (line in lines) {
-            val match = columnRegex.find(line)
-            
-            if (match != null) {
-                val upc = match.groupValues[1].trim()
-                val description = match.groupValues[2].trim()
-                val qty = match.groupValues[3].toIntOrNull() ?: 1
+        if (lines.isEmpty()) return emptyList()
 
-                results.add(
-                    ManifestItem(
-                        upc = upc,
-                        description = description,
-                        expectedCases = qty
-                    )
-                )
+        val upcs = mutableListOf<String>()
+        val descriptions = mutableListOf<String>()
+        val quantities = mutableListOf<Int>()
+
+        var phase = 0
+
+        for (line in lines) {
+            val stripped = line.replace("\\s".toRegex(), "")
+            val isPureDigits = stripped.all { it.isDigit() } && stripped.isNotEmpty()
+
+            when (phase) {
+                0 -> {
+                    if (isPureDigits) {
+                        when {
+                            stripped.length >= 10 -> upcs.add(stripped)
+                            stripped.length == 9 -> { }
+                            else -> { }
+                        }
+                    } else {
+                        phase = 1
+                        descriptions.add(line)
+                    }
+                }
+
+                1 -> {
+                    if (isPureDigits && stripped.length in 1..4 && descriptions.isNotEmpty()) {
+                        val qty = stripped.toIntOrNull()
+                        if (qty != null && qty > 0) {
+                            phase = 2
+                            quantities.add(qty)
+                        } else {
+                            descriptions.add(line)
+                        }
+                    } else {
+                        descriptions.add(line)
+                    }
+                }
+
+                2 -> {
+                    if (isPureDigits && stripped.length in 1..4) {
+                        val qty = stripped.toIntOrNull()
+                        if (qty != null && qty > 0) {
+                            quantities.add(qty)
+                        }
+                    }
+                }
             }
         }
-        
-        // Safety: DistinctBy ensures if OCR catches a fragment of a line twice, 
-        // we only keep one clean version of that UPC.
-        return results.distinctBy { it.upc }
+
+        if (upcs.isEmpty()) return emptyList()
+
+        val itemCount = upcs.size
+        val mergedDescriptions = mergeDescriptions(descriptions, itemCount)
+
+        val finalQuantities = if (quantities.size == itemCount) {
+            quantities
+        } else {
+            MutableList(itemCount) { 1 }
+        }
+
+        return upcs.mapIndexed { i, upc ->
+            ManifestItem(
+                upc = upc,
+                description = mergedDescriptions.getOrElse(i) { "Item ${i + 1}" },
+                expectedCases = finalQuantities.getOrElse(i) { 1 }
+            )
+        }
+    }
+
+    private fun mergeDescriptions(
+        descriptions: List<String>,
+        targetCount: Int
+    ): List<String> {
+        if (descriptions.isEmpty()) {
+            return List(targetCount) { "Item ${it + 1}" }
+        }
+        if (descriptions.size == targetCount) {
+            return descriptions
+        }
+        if (descriptions.size < targetCount) {
+            return descriptions + List(targetCount - descriptions.size) {
+                "Item ${descriptions.size + it + 1}"
+            }
+        }
+
+        val result = mutableListOf<String>()
+        val linesPerItem = descriptions.size.toFloat() / targetCount.toFloat()
+
+        var cursor = 0f
+        for (i in 0 until targetCount) {
+            val nextCursor = cursor + linesPerItem
+            val startIdx = cursor.toInt()
+            val endIdx = nextCursor.toInt().coerceAtLeast(startIdx + 1)
+                .coerceAtMost(descriptions.size)
+            val merged = descriptions.subList(startIdx, endIdx).joinToString(" ")
+            result.add(merged)
+            cursor = nextCursor
+        }
+
+        return result
     }
 }
