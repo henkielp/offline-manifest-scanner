@@ -443,44 +443,43 @@ class ManifestViewModel : ViewModel() {
     internal fun parseManifestText(rawText: String): List<ManifestItem> {
         val results = mutableListOf<ManifestItem>()
         
-        // Regex 101 for this specific Walmart manifest:
-        // Group 1: 9-digit Item Nbr (Optional, often skipped by OCR)
-        // Group 2: 10-12 digit UPC Nbr (Our Anchor)
-        // Group 3: The Item Description (Captures multiple words)
-        // Group 4: The Cases count (Usually a 1 or 2, ignoring pen marks)
-        val lineRegex = Regex("""(\d{9,12})\s+([A-Z0-9\s\-/]{3,})\s+(\d+)""")
+        // This Regex is designed for the Walmart manifest layout:
+        // It looks for a 10-12 digit UPC, then skips any amount of space,
+        // then captures the Description until it sees a number or the end of the line.
+        val upcRegex = Regex("""(\d{10,12})\s+([A-Z0-9\s\-/]{3,})""")
+        val qtyRegex = Regex("""\b(\d+)\b$""") // Looks for a lone number at the very end
 
         val lines = rawText.lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
 
         for (line in lines) {
-            // Find the UPC and Description pattern
-            val match = lineRegex.find(line)
+            val upcMatch = upcRegex.find(line)
             
-            if (match != null) {
-                val upc = match.groupValues[1].trim()
-                val description = match.groupValues[2].trim()
-                val qtyString = match.groupValues[3].trim()
+            if (upcMatch != null) {
+                val upc = upcMatch.groupValues[1].trim()
+                var description = upcMatch.groupValues[2].trim()
                 
-                val qty = qtyString.toIntOrNull() ?: 1
+                // Try to find a quantity at the end of the line. 
+                // If not found (due to checkmarks), default to 1.
+                val qtyMatch = qtyRegex.find(line)
+                val qty = qtyMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
                 
-                // Only add if it looks like a real UPC (10+ digits)
-                // This prevents accidentally grabbing the 'Item Nbr' instead
-                if (upc.length >= 10) {
-                    results.add(
-                        ManifestItem(
-                            upc = upc,
-                            description = description,
-                            expectedCases = qty
-                        )
-                    )
+                // Clean up the description if the quantity was accidentally caught in it
+                if (qtyMatch != null) {
+                    description = description.replace(qtyMatch.value, "").trim()
                 }
+
+                results.add(
+                    ManifestItem(
+                        upc = upc,
+                        description = description,
+                        expectedCases = qty
+                    )
+                )
             }
         }
         
-        // Final Polish: If OCR split a description into two lines, 
-        // the regex might miss one. This logic helps keep the list clean.
         return results.distinctBy { it.upc }
     }
 }
