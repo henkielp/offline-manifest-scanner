@@ -213,11 +213,14 @@ class ManifestViewModel : ViewModel() {
 
         val parsed = parseManifestText(rawText)
 
-        if (parsed.isEmpty()) {
+         if (parsed.isEmpty()) {
+            val preview = if (rawText.length > 800) {
+                rawText.take(800) + "\n\n... (truncated)"
+            } else {
+                rawText
+            }
             _state.value = AppState.Error(
-                "Could not parse any items from the captured image. " +
-                "Make sure the UPC, Description, and Cases columns are " +
-                "fully inside the crop guide and well-lit."
+                "PARSE DEBUG — Raw OCR text:\n\n$preview"
             )
             return
         }
