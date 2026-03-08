@@ -483,3 +483,4 @@ class ManifestViewModel : ViewModel() {
         // the regex might miss one. This logic helps keep the list clean.
         return results.distinctBy { it.upc }
     }
+}
