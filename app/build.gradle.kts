@@ -27,6 +27,9 @@ android {
 }
 
 dependencies {
+    // Add this new Material library for the XML themes
+    implementation("com.google.android.material:material:1.11.0")
+
     // 1. Jetpack Compose (The UI Framework)
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
