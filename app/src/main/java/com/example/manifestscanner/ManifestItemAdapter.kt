@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.manifestscanner.R
 import com.example.manifestscanner.databinding.ItemManifestBinding
-import com.example.manifestscanner.viewmodel.ManifestItem
+
 
 /**
  * Displays [ManifestItem] rows in a RecyclerView.
