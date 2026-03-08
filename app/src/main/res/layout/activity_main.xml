@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark">
+
+    <!-- ============================================================
+         CAMERA LAYER (shared between Capturing and Scanning modes)
+         ============================================================ -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:scaleType="fillCenter" />
+
+    <!-- Crop overlay: visible only during Capturing state -->
+    <com.manifestsync.app.ui.CropOverlayView
+        android:id="@+id/cropOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ============================================================
+         IDLE SCREEN
+         ============================================================ -->
+    <LinearLayout
+        android:id="@+id/idleContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/idle_title"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/idle_subtitle"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCaptureManifest"
+            style="@style/Widget.ManifestSync.Button.Large"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="@string/btn_capture_manifest"
+            app:backgroundTint="@color/primary" />
+    </LinearLayout>
+
+    <!-- ============================================================
+         CAPTURE CONTROLS (shutter button + hint, over camera)
+         ============================================================ -->
+    <FrameLayout
+        android:id="@+id/captureControlsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginTop="24dp"
+            android:background="@color/scrim_overlay"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/capture_hint"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnShutter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="48dp"
+            android:contentDescription="Take photo"
+            android:src="@android:drawable/ic_menu_camera"
+            app:backgroundTint="@color/white"
+            app:fabSize="normal"
+            app:tint="@color/black" />
+    </FrameLayout>
+
+    <!-- ============================================================
+         CAPTURE REVIEW SCREEN
+         ============================================================ -->
+    <include
+        android:id="@+id/captureReviewScreen"
+        layout="@layout/layout_capture_review"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ============================================================
+         PARSING / LOADING SCREEN
+         ============================================================ -->
+    <LinearLayout
+        android:id="@+id/parsingContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:indeterminate="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/parsing_message"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <!-- ============================================================
+         MANIFEST READY SCREEN
+         ============================================================ -->
+    <include
+        android:id="@+id/manifestReadyScreen"
+        layout="@layout/layout_manifest_ready"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ============================================================
+         SCAN CONTROLS (progress + report button, over camera)
+         ============================================================ -->
+    <FrameLayout
+        android:id="@+id/scanControlsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="@color/scrim_overlay"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/txtScanProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/scan_hint"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewReport"
+            style="@style/Widget.ManifestSync.Button.Large"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="32dp"
+            android:text="@string/btn_view_report"
+            app:backgroundTint="@color/accent" />
+    </FrameLayout>
+
+    <!-- ============================================================
+         PENDING CONFIRM OVERLAY (over frozen camera)
+         ============================================================ -->
+    <include
+        android:id="@+id/pendingConfirmScreen"
+        layout="@layout/layout_pending_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ============================================================
+         REPORTING SCREEN
+         ============================================================ -->
+    <include
+        android:id="@+id/reportingScreen"
+        layout="@layout/layout_reporting"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ============================================================
+         ERROR SCREEN
+         ============================================================ -->
+    <LinearLayout
+        android:id="@+id/errorContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtErrorMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/status_missing"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTryAgain"
+            style="@style/Widget.ManifestSync.Button.Large"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/btn_try_again"
+            app:backgroundTint="@color/retry_grey" />
+    </LinearLayout>
+
+</FrameLayout>
