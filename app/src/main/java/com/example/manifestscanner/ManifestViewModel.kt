@@ -443,32 +443,24 @@ class ManifestViewModel : ViewModel() {
     internal fun parseManifestText(rawText: String): List<ManifestItem> {
         val results = mutableListOf<ManifestItem>()
         
-        // This Regex is designed for the Walmart manifest layout:
-        // It looks for a 10-12 digit UPC, then skips any amount of space,
-        // then captures the Description until it sees a number or the end of the line.
-        val upcRegex = Regex("""(\d{10,12})\s+([A-Z0-9\s\-/]{3,})""")
-        val qtyRegex = Regex("""\b(\d+)\b$""") // Looks for a lone number at the very end
+        // Pattern logic:
+        // 1. (\d{10,12}) -> Looks for the UPC (10-12 digits) at the start of the data.
+        // 2. \s+ -> Skips the gap between UPC and Description.
+        // 3. ([A-Z0-9\s\-/]{3,}) -> Grabs the Description (Caps, numbers, dashes).
+        // 4. \s+(\d+) -> Grabs the Case count at the end of the line.
+        val columnRegex = Regex("""(\d{10,12})\s+([A-Z0-9\s\-/]{3,})\s+(\d+)""")
 
         val lines = rawText.lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
 
         for (line in lines) {
-            val upcMatch = upcRegex.find(line)
+            val match = columnRegex.find(line)
             
-            if (upcMatch != null) {
-                val upc = upcMatch.groupValues[1].trim()
-                var description = upcMatch.groupValues[2].trim()
-                
-                // Try to find a quantity at the end of the line. 
-                // If not found (due to checkmarks), default to 1.
-                val qtyMatch = qtyRegex.find(line)
-                val qty = qtyMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
-                
-                // Clean up the description if the quantity was accidentally caught in it
-                if (qtyMatch != null) {
-                    description = description.replace(qtyMatch.value, "").trim()
-                }
+            if (match != null) {
+                val upc = match.groupValues[1].trim()
+                val description = match.groupValues[2].trim()
+                val qty = match.groupValues[3].toIntOrNull() ?: 1
 
                 results.add(
                     ManifestItem(
@@ -480,6 +472,8 @@ class ManifestViewModel : ViewModel() {
             }
         }
         
+        // Safety: DistinctBy ensures if OCR catches a fragment of a line twice, 
+        // we only keep one clean version of that UPC.
         return results.distinctBy { it.upc }
     }
 }
