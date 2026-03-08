@@ -17,7 +17,7 @@
         app:scaleType="fillCenter" />
 
     <!-- Crop overlay: visible only during Capturing state -->
-    <com.manifestsync.app.ui.CropOverlayView
+    <com.example.manifestscanner.CropOverlayView
         android:id="@+id/cropOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
