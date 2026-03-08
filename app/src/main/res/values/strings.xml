@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Manifest Sync</string>
+
+    <!-- Idle screen -->
+    <string name="idle_title">Offline Manifest\n&amp; Barcode Sync</string>
+    <string name="idle_subtitle">v2.0</string>
+    <string name="btn_capture_manifest">Capture Manifest</string>
+
+    <!-- Capturing screen -->
+    <string name="capture_hint">Align the UPC, Description, and Cases columns\ninside the crop guide</string>
+
+    <!-- Capture Review screen -->
+    <string name="review_title">Verify Cropped Area</string>
+    <string name="review_hint">Make sure all rows are visible and readable</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_process">Process OCR</string>
+
+    <!-- Parsing screen -->
+    <string name="parsing_message">Reading manifest…</string>
+
+    <!-- Manifest Ready screen -->
+    <string name="manifest_ready_title">Manifest Loaded</string>
+    <string name="manifest_ready_count">%d items parsed</string>
+    <string name="btn_start_scanning">Start Scanning</string>
+    <string name="btn_add_item">Add Item Manually</string>
+
+    <!-- Scanning screen -->
+    <string name="scan_progress">Scanned: %1$d / %2$d items</string>
+    <string name="scan_hint">Point camera at barcode</string>
+    <string name="btn_view_report">View Report</string>
+
+    <!-- Pending Confirm screen -->
+    <string name="confirm_title">Barcode Detected</string>
+    <string name="confirm_barcode">Barcode: %s</string>
+    <string name="confirm_match">Match: %s</string>
+    <string name="confirm_extra">NOT ON MANIFEST</string>
+    <string name="confirm_scan_count">Scan %1$d of %2$d</string>
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_reject">Reject</string>
+    <string name="confirm_volume_hint">or press Volume Up</string>
+
+    <!-- Reporting screen -->
+    <string name="report_title">Discrepancy Report</string>
+    <string name="tab_missing">Missing</string>
+    <string name="tab_extra">Extras</string>
+    <string name="btn_back_to_scanning">Back to Scanning</string>
+    <string name="missing_empty">All items received!</string>
+    <string name="extra_empty">No extra items scanned</string>
+    <string name="missing_detail">Scanned %1$d of %2$d</string>
+    <string name="extra_detail">Scanned %d time(s)</string>
+
+    <!-- Error screen -->
+    <string name="btn_try_again">Try Again</string>
+
+    <!-- Permissions -->
+    <string name="camera_permission_required">Camera permission is required to scan manifests and barcodes.</string>
+    <string name="camera_permission_denied">Camera permission was denied. Please enable it in Settings to use this app.</string>
+</resources>
