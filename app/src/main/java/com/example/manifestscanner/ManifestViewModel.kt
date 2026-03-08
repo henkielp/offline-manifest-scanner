@@ -214,8 +214,8 @@ class ManifestViewModel : ViewModel() {
         val parsed = parseManifestText(rawText)
 
          if (parsed.isEmpty()) {
-            val preview = if (rawText.length > 800) {
-                rawText.take(800) + "\n\n... (truncated)"
+            val preview = if (rawText.length > 2000 ) {
+                rawText.take(2000) + "\n\n... (truncated)"
             } else {
                 rawText
             }
