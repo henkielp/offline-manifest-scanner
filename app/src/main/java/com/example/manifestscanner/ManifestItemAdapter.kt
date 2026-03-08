@@ -6,9 +6,9 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.manifestsync.app.R
-import com.manifestsync.app.databinding.ItemManifestBinding
-import com.manifestsync.app.viewmodel.ManifestItem
+import com.example.manifestscanner.R
+import com.example.manifestscanner.databinding.ItemManifestBinding
+import com.example.manifestscanner.viewmodel.ManifestItem
 
 /**
  * Displays [ManifestItem] rows in a RecyclerView.
