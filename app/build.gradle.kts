@@ -4,7 +4,6 @@ plugins {
 }
 
 android {
-    // This is the master ID for your app. 
     namespace = "com.example.manifestscanner"
     compileSdk = 34
 
@@ -18,16 +17,27 @@ android {
 
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 
     composeOptions {
-        // This specific version is required to match the Kotlin 1.9.22 we set earlier
         kotlinCompilerExtensionVersion = "1.5.8" 
+    }
+
+    // NEW: Syncing the Android app to use the Java 17 engine
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // NEW: Syncing Kotlin to use the Java 17 engine
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    // Add this new Material library for the XML themes
+    // The missing Material theme paint for the XML layouts
     implementation("com.google.android.material:material:1.11.0")
 
     // 1. Jetpack Compose (The UI Framework)
