@@ -37,12 +37,12 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.example.manifestscanner.databinding.ActivityMainBinding
-import com.example.manifestscanner.ui.CropOverlayView
+
 import com.example.manifestscanner.ui.ExtraItemsAdapter
 import com.example.manifestscanner.ui.ManifestItemAdapter
-import com.example.manifestscanner.util.CoordinateMapper
+
 import com.example.manifestscanner.viewmodel.AppState
-import com.example.manifestscanner.viewmodel.ManifestViewModel
+
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
