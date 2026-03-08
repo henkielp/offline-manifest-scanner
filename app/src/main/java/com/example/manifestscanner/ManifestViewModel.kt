@@ -442,58 +442,44 @@ class ManifestViewModel : ViewModel() {
      */
     internal fun parseManifestText(rawText: String): List<ManifestItem> {
         val results = mutableListOf<ManifestItem>()
+        
+        // Regex 101 for this specific Walmart manifest:
+        // Group 1: 9-digit Item Nbr (Optional, often skipped by OCR)
+        // Group 2: 10-12 digit UPC Nbr (Our Anchor)
+        // Group 3: The Item Description (Captures multiple words)
+        // Group 4: The Cases count (Usually a 1 or 2, ignoring pen marks)
+        val lineRegex = Regex("""(\d{9,12})\s+([A-Z0-9\s\-/]{3,})\s+(\d+)""")
 
         val lines = rawText.lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
 
         for (line in lines) {
-            // Tokenize on runs of 2+ whitespace chars to respect column layout.
-            val tokens = line.split(Regex("\\s{2,}"))
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-
-            if (tokens.size < 3) continue
-
-            // Identify numeric tokens.
-            val numericTokens = tokens
-                .mapIndexed { idx, tok -> idx to tok }
-                .filter { (_, tok) -> tok.all { ch -> ch.isDigit() } }
-
-            if (numericTokens.size < 2) continue
-
-            // UPC candidate: the longest numeric token (10+ digits).
-            val upcCandidate = numericTokens
-                .filter { (_, tok) -> tok.length >= 6 }
-                .maxByOrNull { (_, tok) -> tok.length }
-                ?: continue
-
-            // Quantity candidate: a short numeric token (1 to 4 digits)
-            // that is not the UPC.
-            val qtyCandidate = numericTokens
-                .filter { (idx, tok) -> idx != upcCandidate.first && tok.length <= 4 }
-                .lastOrNull()  // Quantity is usually the rightmost column.
-                ?: continue
-
-            val qty = qtyCandidate.second.toIntOrNull() ?: continue
-            if (qty <= 0) continue
-
-            // Description: all non-UPC, non-quantity tokens joined.
-            val descriptionParts = tokens.filterIndexed { idx, _ ->
-                idx != upcCandidate.first && idx != qtyCandidate.first
+            // Find the UPC and Description pattern
+            val match = lineRegex.find(line)
+            
+            if (match != null) {
+                val upc = match.groupValues[1].trim()
+                val description = match.groupValues[2].trim()
+                val qtyString = match.groupValues[3].trim()
+                
+                val qty = qtyString.toIntOrNull() ?: 1
+                
+                // Only add if it looks like a real UPC (10+ digits)
+                // This prevents accidentally grabbing the 'Item Nbr' instead
+                if (upc.length >= 10) {
+                    results.add(
+                        ManifestItem(
+                            upc = upc,
+                            description = description,
+                            expectedCases = qty
+                        )
+                    )
+                }
             }
-            val description = descriptionParts.joinToString(" ").trim()
-            if (description.isEmpty()) continue
-
-            results.add(
-                ManifestItem(
-                    upc = upcCandidate.second,
-                    description = description,
-                    expectedCases = qty
-                )
-            )
         }
-
-        return results
+        
+        // Final Polish: If OCR split a description into two lines, 
+        // the regex might miss one. This logic helps keep the list clean.
+        return results.distinctBy { it.upc }
     }
-}
