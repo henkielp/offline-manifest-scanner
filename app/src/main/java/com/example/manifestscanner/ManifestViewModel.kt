@@ -213,14 +213,11 @@ class ManifestViewModel : ViewModel() {
 
         val parsed = parseManifestText(rawText)
 
-         if (parsed.isEmpty()) {
-            val preview = if (rawText.length > 2000 ) {
-                rawText.take(2000) + "\n\n... (truncated)"
-            } else {
-                rawText
-            }
+if (parsed.isEmpty()) {
             _state.value = AppState.Error(
-                "PARSE DEBUG — Raw OCR text:\n\n$preview"
+                "Could not parse any items from the captured image. " +
+                "Make sure the UPC, Description, and Cases columns are " +
+                "fully inside the crop guide and well-lit."
             )
             return
         }
@@ -508,14 +505,7 @@ if (upcs.isEmpty()) return emptyList()
             quantities.getOrElse(i) { 1 }
         }
 
-        // DEBUG: Add a fake first item showing bucket counts
-        val debugItem = ManifestItem(
-            upc = "0000000000",
-            description = "DEBUG: ${upcs.size} UPCs, ${descriptions.size} descs, ${quantities.size} qtys = ${quantities.joinToString(",")}",
-            expectedCases = 0
-        )
-
-        return listOf(debugItem) + upcs.mapIndexed { i, upc ->
+       return upcs.mapIndexed { i, upc ->
             ManifestItem(
                 upc = upc,
                 description = mergedDescriptions.getOrElse(i) { "Item ${i + 1}" },
