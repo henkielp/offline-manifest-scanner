@@ -504,10 +504,8 @@ if (upcs.isEmpty()) return emptyList()
         val itemCount = upcs.size
         val mergedDescriptions = mergeDescriptions(descriptions, itemCount)
 
-        val finalQuantities = if (quantities.size == itemCount) {
-            quantities
-        } else {
-            MutableList(itemCount) { 1 }
+        val finalQuantities = MutableList(itemCount) { i ->
+            quantities.getOrElse(i) { 1 }
         }
 
         // DEBUG: Add a fake first item showing bucket counts
