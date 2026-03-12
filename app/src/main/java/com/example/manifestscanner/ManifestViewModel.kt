@@ -499,7 +499,7 @@ class ManifestViewModel : ViewModel() {
             }
         }
 
-        if (upcs.isEmpty()) return emptyList()
+if (upcs.isEmpty()) return emptyList()
 
         val itemCount = upcs.size
         val mergedDescriptions = mergeDescriptions(descriptions, itemCount)
@@ -510,7 +510,14 @@ class ManifestViewModel : ViewModel() {
             MutableList(itemCount) { 1 }
         }
 
-        return upcs.mapIndexed { i, upc ->
+        // DEBUG: Add a fake first item showing bucket counts
+        val debugItem = ManifestItem(
+            upc = "0000000000",
+            description = "DEBUG: ${upcs.size} UPCs, ${descriptions.size} descs, ${quantities.size} qtys = ${quantities.joinToString(",")}",
+            expectedCases = 0
+        )
+
+        return listOf(debugItem) + upcs.mapIndexed { i, upc ->
             ManifestItem(
                 upc = upc,
                 description = mergedDescriptions.getOrElse(i) { "Item ${i + 1}" },
