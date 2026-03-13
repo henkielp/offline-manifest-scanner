@@ -144,12 +144,23 @@ class ManifestViewModel : ViewModel() {
     private var manifestItems: MutableList<ManifestItem> = mutableListOf()
     private var extraItems: MutableList<ExtraItem> = mutableListOf()
 
+    // When true, the next OCR result appends to the existing list
+    // instead of replacing it. Set by captureNextPage().
+    private var appendMode = false
+
     // -----------------------------------------------------------------------
     // Phase 1a: Capture flow (camera with crop overlay)
     // -----------------------------------------------------------------------
 
-    /** User taps "Capture Manifest" from the Idle screen. */
+     /** User taps "Capture Manifest" from the Idle screen. */
     fun startCapture() {
+        appendMode = false
+        _state.value = AppState.Capturing
+    }
+
+    /** User taps "Scan Next Page" from ManifestReady. Keeps existing items. */
+    fun captureNextPage() {
+        appendMode = true
         _state.value = AppState.Capturing
     }
 
@@ -222,9 +233,14 @@ if (parsed.isEmpty()) {
             return
         }
 
-        manifestItems = parsed.toMutableList()
-        extraItems.clear()
-        _state.value = AppState.ManifestReady(items = parsed)
+        if (appendMode) {
+            manifestItems.addAll(parsed)
+        } else {
+            manifestItems = parsed.toMutableList()
+            extraItems.clear()
+        }
+        appendMode = false
+        _state.value = AppState.ManifestReady(items = manifestItems.toList())
     }
 
     /**
