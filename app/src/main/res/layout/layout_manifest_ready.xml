@@ -55,17 +55,28 @@
             style="@style/Widget.ManifestSync.Button.Large"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
             android:text="@string/btn_add_item"
             app:backgroundTint="@color/retry_grey" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextPage"
+            style="@style/Widget.ManifestSync.Button.Large"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:text="Next Page"
+            app:backgroundTint="@color/primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStartScanning"
             style="@style/Widget.ManifestSync.Button.Large"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:layout_weight="1"
             android:text="@string/btn_start_scanning"
             app:backgroundTint="@color/confirm_green" />
