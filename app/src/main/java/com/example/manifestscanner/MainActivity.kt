@@ -203,6 +203,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         // --- Manifest Ready ---
+        binding.manifestReadyScreen.btnNextPage.setOnClickListener {
+            viewModel.captureNextPage()
+        }
         binding.manifestReadyScreen.btnStartScanning.setOnClickListener {
             viewModel.startScanning()
         }
