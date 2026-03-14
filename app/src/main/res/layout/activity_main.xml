@@ -176,13 +176,26 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnScanBarcode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="48dp"
+            android:contentDescription="Scan barcode"
+            android:src="@android:drawable/ic_menu_search"
+            app:backgroundTint="@color/white"
+            app:fabSize="normal"
+            app:tint="@color/black" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewReport"
             style="@style/Widget.ManifestSync.Button.Large"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="32dp"
+            android:layout_width="160dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="52dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/btn_view_report"
             app:backgroundTint="@color/accent" />
     </FrameLayout>
