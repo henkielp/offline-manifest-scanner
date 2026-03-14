@@ -7,7 +7,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Size
-import android.view.KeyEvent
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,10 +49,10 @@ import java.util.concurrent.Executors
  * Single Activity for the Offline Manifest & Barcode Sync v2.0 app.
  *
  * Responsibilities:
- *   - Manages X lifecycle with two modes (capture for OCR, scan for barcodes).
+ *   - Manages CameraX lifecycle with two modes (capture for OCR, scan for barcodes).
  *   - Observes [ManifestViewModel.state] and toggles UI visibility accordingly.
  *   - Bridges ML Kit results into the ViewModel.
- *   - Handles Volume Up hardware key for scan confirmation.
+ *   - Uses burst-scan approach: tap Scan button to analyze frames for 1.5 seconds.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -77,8 +78,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var missingAdapter: ManifestItemAdapter
     private lateinit var extraAdapter: ExtraItemsAdapter
 
-    // Flag to pause barcode analysis while PendingConfirm is showing
+    // Flag: only true during a burst scan window
     private var analysisActive = false
+
+    // Burst scan timeout handler
+    private val burstHandler = Handler(Looper.getMainLooper())
+    private var burstTimeoutRunnable: Runnable? = null
 
     // -----------------------------------------------------------------------
     // Permission launcher
@@ -114,24 +119,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        cancelBurstTimeout()
         cameraExecutor.shutdown()
         textRecognizer.close()
         barcodeScanner.close()
-    }
-
-    // -----------------------------------------------------------------------
-    // Volume Up key: confirm scan in PendingConfirm state
-    // -----------------------------------------------------------------------
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            val current = viewModel.state.value
-            if (current is AppState.PendingConfirm) {
-                viewModel.confirmScan()
-                return true   // consume the event
-            }
-        }
-        return super.onKeyDown(keyCode, event)
     }
 
     // -----------------------------------------------------------------------
@@ -214,6 +205,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         // --- Scan Controls ---
+        binding.btnScanBarcode.setOnClickListener {
+            startBurstScan()
+        }
         binding.btnViewReport.setOnClickListener {
             viewModel.generateReport()
         }
@@ -335,7 +329,7 @@ class MainActivity : AppCompatActivity() {
     private fun showScanning(state: AppState.Scanning) {
         binding.previewView.visibility = View.VISIBLE
         binding.scanControlsContainer.visibility = View.VISIBLE
-        analysisActive = true
+        analysisActive = false
         bindScanMode()
 
         // Update progress text.
@@ -349,7 +343,8 @@ class MainActivity : AppCompatActivity() {
         // Keep the camera preview visible (frozen) behind the overlay.
         binding.previewView.visibility = View.VISIBLE
         binding.pendingConfirmScreen.root.visibility = View.VISIBLE
-        analysisActive = false  // pause analysis
+        analysisActive = false
+        cancelBurstTimeout()
 
         binding.pendingConfirmScreen.txtConfirmBarcode.text =
             getString(R.string.confirm_barcode, state.scannedBarcode)
@@ -619,6 +614,28 @@ class MainActivity : AppCompatActivity() {
             .addOnCompleteListener {
                 imageProxy.close()
             }
+    }
+
+    // -----------------------------------------------------------------------
+    // Burst scan: analyze frames for 1.5 seconds after Scan button tap
+    // -----------------------------------------------------------------------
+
+    private fun startBurstScan() {
+        analysisActive = true
+        cancelBurstTimeout()
+        burstTimeoutRunnable = Runnable { onBurstTimeout() }
+        burstHandler.postDelayed(burstTimeoutRunnable!!, 1500L)
+    }
+
+    private fun onBurstTimeout() {
+        analysisActive = false
+        burstTimeoutRunnable = null
+        Toast.makeText(this, "No barcode detected. Try again.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun cancelBurstTimeout() {
+        burstTimeoutRunnable?.let { burstHandler.removeCallbacks(it) }
+        burstTimeoutRunnable = null
     }
 
     // -----------------------------------------------------------------------
