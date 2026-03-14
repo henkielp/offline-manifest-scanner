@@ -48,7 +48,7 @@ import java.util.concurrent.Executors
  * Single Activity for the Offline Manifest & Barcode Sync v2.0 app.
  *
  * Responsibilities:
- *   - Manages CameraX lifecycle with two modes (capture for OCR, scan for barcodes).
+ *   - Manages X lifecycle with two modes (capture for OCR, scan for barcodes).
  *   - Observes [ManifestViewModel.state] and toggles UI visibility accordingly.
  *   - Bridges ML Kit results into the ViewModel.
  *   - Handles Volume Up hardware key for scan confirmation.
@@ -465,25 +465,12 @@ class MainActivity : AppCompatActivity() {
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
-           try {
-            val cam = provider.bindToLifecycle(
+           provider.bindToLifecycle(
                 this,
                 CameraSelector.DEFAULT_BACK_CAMERA,
                 preview,
-                imageAnalysis
+                imageCapture
             )
-            cam.cameraControl.setLinearZoom(0.3f)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        // Zoom in to 2x so barcodes are readable from a comfortable distance.
-        // Range is 0f (widest) to 1f (max zoom). 0.5f is roughly 2-3x on most phones.
-        camera.cameraControl.setLinearZoom(0.3f)
-
-        // Zoom in to 2x so barcodes are readable from a comfortable distance.
-        // Range is 0f (widest) to 1f (max zoom). 0.5f is roughly 2-3x on most phones.
-        camera.cameraControl.setLinearZoom(0.3f)
     }
 
     /**
@@ -507,12 +494,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        provider.bindToLifecycle(
-            this,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview,
-            imageAnalysis
-        )
+        try {
+            val cam = provider.bindToLifecycle(
+                this,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview,
+                imageAnalysis
+            )
+            // Zoom in so barcodes are readable from a comfortable distance.
+            cam.cameraControl.setLinearZoom(0.3f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun unbindCamera() {
