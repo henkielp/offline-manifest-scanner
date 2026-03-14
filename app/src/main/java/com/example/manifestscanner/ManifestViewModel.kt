@@ -282,14 +282,18 @@ if (parsed.isEmpty()) {
      * On match: transition to PendingConfirm so the user can verify.
      * On no match: still transition to PendingConfirm, flagged as an extra item.
      */
-    fun onBarcodeDetected(scannedBarcode: String) {
+fun onBarcodeDetected(scannedBarcode: String) {
         // Ignore duplicate rapid-fire detections while already pending.
         if (_state.value is AppState.PendingConfirm) return
 
         val cleanBarcode = scannedBarcode.trim()
         if (cleanBarcode.isEmpty()) return
 
-        val matchResult = findMatchingItem(cleanBarcode, manifestItems)
+        // Extract GTIN from GS1-128 shipping barcodes, or clean up
+        // standard UPC-A/EAN-13 values.
+        val processedBarcode = preprocessBarcode(cleanBarcode)
+
+        val matchResult = findMatchingItem(processedBarcode, manifestItems)
 
         val description = if (matchResult != null) {
             manifestItems[matchResult].description
@@ -297,10 +301,10 @@ if (parsed.isEmpty()) {
             "NOT ON MANIFEST"
         }
 
-        _state.value = AppState.PendingConfirm(
+ _state.value = AppState.PendingConfirm(
             items = manifestItems.toList(),
             extraItems = extraItems.toList(),
-            scannedBarcode = cleanBarcode,
+            scannedBarcode = processedBarcode,
             matchedIndex = matchResult,
             matchedDescription = description
         )
@@ -405,7 +409,48 @@ if (parsed.isEmpty()) {
     /** Count of manifest lines still missing at least one case. */
     fun outstandingLineCount(): Int =
         manifestItems.count { it.scannedCases < it.expectedCases }
+// -----------------------------------------------------------------------
+    // Internal: Barcode Preprocessing (GS1-128 GTIN Extraction)
+    // -----------------------------------------------------------------------
 
+    /**
+     * Preprocesses a raw barcode string to extract the product identifier.
+     *
+     * GS1-128 shipping barcodes encode multiple fields:
+     *   ]C1  01  10194346066855  15  270226  10  1369406
+     *   ^^^  ^^  ^^^^^^^^^^^^^^  ^^  ^^^^^^  ^^  ^^^^^^^
+     *   sym  AI  GTIN-14         AI  date    AI  lot
+     *
+     * The GTIN-14 contains the UPC/EAN buried inside it:
+     *   1  0194346066855
+     *   ^  ^^^^^^^^^^^^^
+     *   packaging indicator  UPC-13/EAN-13
+     *
+     * This function detects GS1-128 barcodes, extracts the GTIN-14,
+     * and returns it for substring matching. For standard UPC-A or
+     * EAN-13 barcodes, it strips any symbology prefix and returns
+     * the clean numeric value.
+     */
+    internal fun preprocessBarcode(rawBarcode: String): String {
+        var value = rawBarcode.trim()
+
+        // Strip symbology identifier prefixes (]C1, ]e0, ]d2, etc.)
+        if (value.startsWith("]") && value.length > 3) {
+            value = value.substring(3)
+        }
+
+        // Check for GS1 Application Identifier 01 (GTIN-14).
+        // AI 01 is always followed by exactly 14 digits.
+        if (value.startsWith("01") && value.length >= 16) {
+            val gtin14 = value.substring(2, 16)
+            if (gtin14.all { it.isDigit() }) {
+                return gtin14
+            }
+        }
+
+        // Not a GS1-128, or no GTIN found. Return as-is.
+        return value
+    }
     // -----------------------------------------------------------------------
     // Internal: Substring Matching Engine
     // -----------------------------------------------------------------------
