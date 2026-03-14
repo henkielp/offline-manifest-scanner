@@ -465,12 +465,21 @@ class MainActivity : AppCompatActivity() {
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
-          val camera = provider.bindToLifecycle(
-            this,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview,
-            imageAnalysis
-        )
+           try {
+            val cam = provider.bindToLifecycle(
+                this,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview,
+                imageAnalysis
+            )
+            cam.cameraControl.setLinearZoom(0.3f)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Zoom in to 2x so barcodes are readable from a comfortable distance.
+        // Range is 0f (widest) to 1f (max zoom). 0.5f is roughly 2-3x on most phones.
+        camera.cameraControl.setLinearZoom(0.3f)
 
         // Zoom in to 2x so barcodes are readable from a comfortable distance.
         // Range is 0f (widest) to 1f (max zoom). 0.5f is roughly 2-3x on most phones.
